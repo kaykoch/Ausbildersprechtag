@@ -1,0 +1,53 @@
+@page {
+    size: A4;
+    margin: 10mm;
+
+    @bottom-center {
+        font-size: 0.6rem;
+        content: " SJ {{ untertitel }} - Seite: " counter(page) " / " counter(pages);
+    }
+}
+
+html {
+    font-size: 20px;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+div.schueler-block {
+    break-after: page;
+}
+
+h2 {
+    font-size: 1rem;
+    margin: 0.2rem;
+}
+h3 {
+    font-size: 0.9rem;
+    margin: 0.2rem;
+}
+table,
+th,
+td {
+    border: 1px solid #ccc;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+
+}
+
+th {
+    color: black;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+td {
+    color: black;
+    font-size: 0.75rem;
+    padding: 0.5rem;
+}

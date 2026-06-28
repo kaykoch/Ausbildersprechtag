@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+{{ form.action }}
+<h3>Buchungen: <br>
+    <span>{{berater.berater_vorname}} {{berater.berater_nachname}} ({{berater.berater_raum}})</span>
+</h3>
+<div class="container">
+    <form id="globalBuchungForm" method="POST">
+        {{ form.csrf_token }}
+        {{ form.buchung_token }}
+        {{ form.buchung_action }}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 100%;">Betrieb</th>
+                    <th>Mailadresse</th>
+                    <th>Uhrzeit</th>
+                    <th>Buchung</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for buchung in berater.buchungen %}
+                <tr>
+                    <td>{{ buchung.betrieb_name }}</td>
+                    <td>{{ buchung.betrieb_mail }}</td>
+                    <td>{{ buchung.uhrzeit_id }}</td>
+                    <td>
+                        <button type="button" class="btn btn-danger  small"
+                            onclick="submitAction('{{ buchung.token }}', 'delete', 'Möchten Sie diese Buchung wirklich löschen?')">
+                            löschen
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="button" class="btn btn-primary midi" onclick="submitAction('', 'download')">
+            pdf - Download
+        </button>
+
+    </form>
+</div>
+<script>
+    function submitAction(token, action, confirmationMessage = null) {
+        // Falls eine Bestätigung gefordert ist (z.B. beim Löschen)
+        if (confirmationMessage && !confirm(confirmationMessage)) {
+            return; // Abbrechen, wenn der Nutzer "Abbrechen" klickt
+        }
+
+        document.getElementById('buchung_token').value = token;
+        document.getElementById('buchung_action').value = action;
+
+        // Das Formular absenden
+        document.getElementById('globalBuchungForm').submit();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %} 
+{% block content %}
+
+<h3>Konfiguration</h3>
+<form method="POST">
+    {{ form.csrf_token }}
+    <h2>Admin Zugang</h2>
+    <div class="grid">
+        <div class="field">
+            {{ form.admin_login.label }}
+            {{ form.admin_login(class="form-control") }}
+        </div>
+        <div class="field">
+            {{ form.admin_password.label }}
+            {{ form.admin_password(class="form-control") }}
+        </div>
+    </div>
+    <h2>Lehrkräfte Zugang</h2>
+    <div class="grid">
+        <div class="field">
+            {{ form.tss_login.label }}
+            {{ form.tss_login(class="form-control") }}
+        </div>
+        <div class="field">
+            {{ form.tss_password.label }}
+            {{ form.tss_password(class="form-control") }}
+        </div>
+    </div>    
+    <h2>Sprechtag</h2>
+    <div class="grid">
+        <div class="field">
+            {{ form.sprechtag_termin.label }}
+            {{ form.sprechtag_termin(class="form-control") }}
+        </div>
+        <div class="field">
+            {{ form.sprechtag_wartezeit.label }}
+            {{ form.sprechtag_wartezeit(class="form-control") }}
+        </div>
+        <div class="field">
+            {{ form.sprechtag_beginn.label }}
+            {{ form.sprechtag_beginn(class="form-control") }}
+        </div>
+        <div class="field">
+            {{ form.sprechtag_ende.label }}
+            {{ form.sprechtag_ende(class="form-control") }}
+        </div>
+
+    </div>
+
+    <h2>Mailserver</h2>
+    <div class="grid">
+        <div class="field">
+            {{ form.mail_server.label }}
+            {{ form.mail_server(class="form-control") }}
+        </div>
+        <div class="field">
+            {{ form.mail_port.label }}
+            {{ form.mail_port(class="form-control") }}
+        </div>
+        <div class="field"><label></label></div>
+
+        <div class="field">
+            {{ form.mail_use_ssl.label }}
+            {{ form.mail_use_ssl(class="form-control") }}
+        </div>
+        <div class="field">
+            {{ form.mail_use_tls.label }}
+            {{ form.mail_use_tls(class="form-control") }}
+        </div>
+        <div class="field"><label></label></div>
+
+        <div class="field">
+            {{ form.mail_username.label }}
+            {{ form.mail_username(class="form-control") }}
+        </div>
+        <div class="field">
+            {{ form.mail_password.label }}
+            {{ form.mail_password(class="form-control")}}
+        </div>
+
+        <div class="field">
+            {{ form.mail_default_sender.label }}
+            {{ form.mail_default_sender(class="form-control") }}
+        </div>
+        <div class="field"><label></label></div>
+    </div>
+
+    <div class="field">{{ form.submit(class="btn btn-primary big") }}</div>
+</form>
+{% endblock %}

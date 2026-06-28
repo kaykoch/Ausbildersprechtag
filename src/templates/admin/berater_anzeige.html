@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Registrierte Lehrkräfte</h3>
+<form id="globalActionForm"  method="POST">
+  {{ form.csrf_token }}
+  {{ form.action }}
+  {{ form.token }}
+
+  <table class="ausbilder">
+    <thead>
+      <tr>
+        <th style="width: 100%;" >
+          <div class="tooltip"
+            data-tooltip="Die Lehrkräfte mit ihrem Raum und Mail-Adresse. 📩, wenn eine Benachrichtigung gewünscht ist">
+            <div >Lehrkraft</div>
+          </div>
+        </th>
+        <th>
+          <div class="tooltip" data-tooltip="Einstellungen der Lehrkraft bearbeiten">
+            <div >Lehrkraft</div>
+          </div>
+        </th>
+        <th>
+          <div class="tooltip" data-tooltip="Alle bisherigen Anmeldungen anzeigen">
+            <div >Buchungen</div>
+          </div>
+        </th>
+        <th>
+          <div class="tooltip" data-tooltip="Anmeldemail erneut an Lehrkraft senden">
+            <div>Mail</div>
+          </div>
+        </th>
+
+        <th>
+          <div class="tooltip-danger" data-tooltip="Lehrkraft und alle Anmeldungen löschen">
+            <div>Lehrkraft</div>
+          </div>
+        </th>
+
+      </tr>
+    </thead>
+    <tbody>
+
+      {% for berater in berater_liste %}
+      <tr>
+        <td>
+          <b>{{berater.berater_nachname}}, {{berater.berater_vorname}}</b> ({{berater.berater_raum}} )<br>
+          {{berater.berater_mail}}  {% if berater.berater_will_mail %} (📩) {% endif %}
+        </td>
+
+        <td>
+          <button type="button" class="btn btn-primary small"
+            onclick="submitAction('{{ berater.token }}', 'update')">
+            bearbeiten
+          </button>
+        </td>
+       <td>
+          <button type="button" class="btn btn-primary  small"
+            onclick="submitAction('{{ berater.token }}', 'show')">
+            anzeigen
+          </button>
+        </td>        
+       <td>
+          <button type="button" class="btn btn-primary  small"
+            onclick="submitAction('{{ berater.token }}', 'send', 'Möchten Sie die E-Mail wirklich erneut senden?')">
+            senden
+          </button>
+        </td>
+        <td>
+          <button type="button" class="btn btn-danger  small"
+            onclick="submitAction('{{ berater.token }}', 'delete', 'Möchten Sie diesen Berater wirklich löschen?')">
+            löschen
+          </button>
+        </td>
+        
+      </tr>
+      {% endfor %}
+
+    </tbody>
+  </table>
+</form>
+
+<script>
+  function submitAction(token, action, confirmationMessage = null) {
+    // Falls eine Bestätigung gefordert ist (z.B. beim Löschen)
+    if (confirmationMessage && !confirm(confirmationMessage)) {
+      return; // Abbrechen, wenn der Nutzer "Abbrechen" klickt
+    }
+
+    // Die versteckten Inputs des globalen Formulars heraussuchen
+    document.getElementById('form_token').value = token;
+    document.getElementById('form_action').value = action;
+   
+  
+    // Das Formular absendenglobalActionForm
+    document.getElementById('globalActionForm').submit();
+  }
+</script>
+
+
+
+{% endblock %}

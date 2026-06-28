@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Anmeldung: <br>
+    <span>als Ausbildungsbetrieb oder Erziehungsberechtigte</span>
+</h3>
+
+<div class="container">
+    <form method="POST">
+        {{ form.csrf_token }}
+        <div class="grid">
+            <!-- ##########################################-->
+            <div class="field">
+                {{ form.berater_id.label }}
+                {{ form.berater_id(class="form-control") }}
+            </div>
+            <div class="field ">
+                {{ form.uhrzeit_id.label }}
+                {{ form.uhrzeit_id(class="form-control", disabled=True,) }}
+            </div>
+        </div>
+        <div class="grid">
+            <!-- ##########################################-->
+            <div class="field ">
+                {{ form.betrieb_name.label }}
+                {{ form.betrieb_name(class="form-control") }}
+            </div>
+
+            <div class="field ">
+                {{ form.betrieb_mail.label }}
+                {{ form.betrieb_mail(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="field">
+            {{ form.submit(class="btn btn-primary big") }}
+        </div>
+    </form>
+</div>
+
+<script>
+    const beraterSelect = document.getElementById('berater_id');
+    const uhrzeitSelect = document.getElementById('uhrzeit_id');
+
+    // Wird ausgeführt, sobald sich das Dropdown der Personen ändert
+    beraterSelect.addEventListener('change', function () {
+        const beraterId = this.value;
+
+        if (beraterId) {
+            // Bei unserem Flask-Server nachfragen
+            fetch(`/api/freie_zeiten/${beraterId}`)
+                .then(response => response.json())
+                .then(zeiten => {
+                    // Altes Dropdown leeren
+                    uhrzeitSelect.innerHTML = '<option value="" disabled selected>Bitte Uhrzeit wählen...</option>';
+
+                    // Neue Zeiten als <option> hinzufügen
+                    zeiten.forEach(zeit => {
+                        const option = document.createElement('option');
+                        option.value = zeit;
+                        option.textContent = zeit + ' Uhr';
+                        uhrzeitSelect.appendChild(option);
+                    });
+
+                    // Dropdown wieder aktiv schalten
+                    uhrzeitSelect.disabled = false;
+                })
+                .catch(error => console.error('Fehler beim Laden der Zeiten:', error));
+        } else {
+            uhrzeitSelect.innerHTML = '<option value="">Bitte wählen Sie zuerst eine Lehrkraft aus</option>';
+            uhrzeitSelect.disabled = true;
+        }
+    });
+</script>
+
+
+{% endblock %}

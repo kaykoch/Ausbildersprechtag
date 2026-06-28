@@ -1,0 +1,6 @@
+.venv/
+.git/
+/instance/
+__pycache__/
+.code-workspace
+*.log

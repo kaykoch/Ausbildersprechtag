@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+</head>
+
+<body>
+
+    <h2>{{ berater.berater_vorname }} {{ berater.berater_nachname }}</h2>
+    <h3>Raum: {{ berater.berater_raum }}</h3>
+    <div class="schueler-block">
+        <table>
+            <thead>
+                <tr>
+                    <th>Betrieb</th>
+                    <th>Mailadresse</th>
+                    <th>Uhrzeit</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for buchung in berater.buchungen %}
+                <tr>
+                    <td>{{ buchung.betrieb_name }}</td>
+                    <td>{{ buchung.betrieb_mail }}</td>
+                    <td>{{ buchung.uhrzeit_id }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+    </div>
+</body>
+
+</html>

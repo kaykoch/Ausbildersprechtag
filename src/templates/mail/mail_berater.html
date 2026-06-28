@@ -1,0 +1,50 @@
+{% extends "mail/base_mail.html" %}
+
+{% block content %}
+
+<body>
+  <div class="header">
+    <h2>Terminbestätigung — Ausbildersprechtag TSS Bitburg</h2>
+  </div>
+
+  <div class="content">
+    <p>Hallo {{ buchung.berater.berater_vorname }} {{buchung.berater.berater_nachname }}</p>
+
+    {% if delete %}
+    <p class="warning">Folgender Termin wurde gelöscht:</p>
+    {% else %}
+    <p>
+      Jemand hat sich für den <strong>Ausbildersprechtag der TSS Bitburg</strong>
+      am <strong>{{ sprechtag.tag }}</strong> angemeldet.
+    </p>
+    {% endif %}
+
+    <div class="info-box">
+      <table>
+        <tr>
+          <td>Betrieb:</td>
+          <td><strong>{{ buchung.betrieb_name }}</strong></td>
+        </tr>
+        <tr>
+          <td>Uhrzeit:</td>
+          <td>{{ buchung.uhrzeit_id }} Uhr</td>
+        </tr>
+        <tr>
+          <td>Raum:</td>
+          <td>{{ buchung.berater.berater_raum }} </td>
+        </tr>
+        <tr>
+          <td>Lehrkraft:</td>
+          <td>{{ buchung.berater.berater_vorname }} {{ buchung.berater.berater_nachname }}</td>
+        </tr>
+      </table>
+    </div>
+
+
+    <div class="footer">
+      Diese E-Mail wurde automatisch generiert. Bitte antworten Sie nicht auf diese Nachricht.
+    </div>
+  </div>
+
+</body>
+{% endblock %}
