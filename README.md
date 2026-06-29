@@ -1,9 +1,10 @@
-Bedienungsanleitung: Online-Portal zum Ausbilder- und Elternsprechtag
+Online-Portal zum Ausbilder- und Elternsprechtag
 ==============
 
 ### Einleitung
 Der Ausbilder- und Elternsprechtag an Schulen ist ein zentrales Instrument zur För­derung des Dialogs zwischen der Schule und den dualen Ausbildungsbetrieben bzw. den Erziehungsberechtigten. Um die Orga­nisation dieses Austauschs – analog zum klassischen Elternsprechtag – effizient, transparent und zeitsparend zu gestalten, wird eine webbasierte Anwendung eingesetzt.
-In folgenden wird fpr Ausbilder und Erziehungsberechtigte das Wort Partner genutzt
+
+In folgenden wird für Ausbilder und Erziehungsberechtigte das Wort Partner genutzt.
 ___
 
 # Inhaltsverzeichnis
