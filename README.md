@@ -22,9 +22,7 @@ Zusätzlich wird [Gunicorn](https://gunicorn.org) instaliert. Ein Web Server Gat
 ## Voraussetzungen
 Auf dem Server muss python3 (>= 3.11), python3-venv und git installiert sein
 ```bash 
-apt install python3
-apt install python3-venv
-apt install git
+apt install python3 python3-venv git
 ```
 
 ## Installation des Grundsystems
@@ -32,16 +30,19 @@ Wählen Sie die Zeilen entsprechend, ob sie Variante 1 (Lokal zum testen) oder V
 (auf einem Server als root !) einrichten wollen und wie sie das INSTALLATIONSVERZEICHNIS nennen wollen
 ```bash  
 # Erstellen des INSTALLATIONSVERZEICHNIS
-mkdir ~/ausbildersprechtag # Variante 1 Lokal
-mkdir -p /var/www/ausbildersprechtag # Variante 2 Server
+mkdir ~/www/ # Variante 1 Lokal
+mkdir -p /var/www/ # Variante 2 Server
 
 # In Ordner hineinspringen                            
-cd ~/ausbildersprechtag # Variante 1 Lokal
-cd /var/www/ausbildersprechtag # Variante 2 Server
+cd ~/www # Variante 1 Lokal
+cd /var/www/ # Variante 2 Server
 
-# Herunterladen der App (git )                                
-git clone https://github.com/kaykoch/Ausbildersprechtag.git
+# Herunterladen der App (git )                           
+git https://github.com/kaykoch/ausbildersprechtag.git
 
+# Ins INSTALLATIONSVERZEICHNIS wechseln
+ cd /var/www/ausbildersprechtag/
+ 
 # Setup-Programm starten
 python3 setup.py                                
 ```
