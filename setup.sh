@@ -71,21 +71,13 @@ fi
 
 okay "Alle benötigten Programme sind verfügbar."
 
-# --- NEU: Prüfung, ob der Benutzer www-data existiert ---
+# --- Prüfung, ob der Benutzer www-data existiert ---
 info "Prüfe, ob Benutzer 'www-data' existiert..."
 if ! id -u www-data >/dev/null 2>&1; then
     error "Benutzer 'www-data' existiert nicht. Abbruch."
     exit 1
 fi
 okay "Benutzer 'www-data' existiert."
-
-# --- NEU: Berechtigungen für das aktuelle Verzeichnis und alle Unterverzeichnisse setzen ---
-info "Setze Berechtigungen für das aktuelle Verzeichnis und alle Unterverzeichnisse auf www-data:www-data..."
-if ! chown -R www-data:www-data .; then
-    error "Berechtigungen konnten nicht gesetzt werden. Abbruch."
-    exit 1
-fi
-okay "Berechtigungen erfolgreich gesetzt."
 
 # 2) requirements.txt prüfen
 if [ ! -f "$REQUIREMENTS_FILE" ]; then
@@ -178,6 +170,17 @@ info "Aktiviere venv und installiere Pakete..."
 
   okay "Venv-Setup in Subshell abgeschlossen."
 )
+
+
+info "Setze Berechtigungen für das aktuelle Verzeichnis und alle Unterverzeichnisse auf www-data:www-data..."
+# Setze Berechtigungen für das übergeordnete Verzeichnis (z. B. /var/www/tss_ausbildersprechtag)
+PARENT_DIR=$(dirname "$(pwd)")
+if ! chown -R www-data:www-data "$PARENT_DIR"; then
+    error "Berechtigungen konnten nicht gesetzt werden. Abbruch."
+    exit 1
+fi
+
+okay "Berechtigungen erfolgreich gesetzt."
 
 info "Fertig. Um die virtuelle Umgebung jetzt zu aktivieren, führe aus:"
 echo ""

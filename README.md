@@ -94,7 +94,13 @@ bzw. für die Administration:  (Login: admin | Password: admin)
 (mit startGunicorn.py) 
 
 Wenn das Programm im produktiven Einsatz laufen, kommt GuniCorn ins Spiel. \
+
+
 Hierfür gibt es das Startscript  **startGunicorn.py**, dass angepasst werden kann:
+
+**Allerdings läuft der Dienst in dieser Variante als root. Das stellt ein potentielles Risiko dar und sollte nur im eigenen Netz durchgeführt werden.\
+Das klingt für diese App ziemlich unsinnig, allerdings habe ich auch eine andere geschrieben, die im lokalen Netz laufen kann.\
+Es sollte also auf jeden Fall [Server-Variante 2](#server-variante-2) gewählt werden.**
 
 **startGunicorn.py:** \
 Es gibt drei Parameter im script, die man ändern kann:\
@@ -135,65 +141,59 @@ http://<SERVER_URL>:PORT/admin
 ### Server-Variante 2 
 (mit systemd) 
 
-Als Alternative kann man auch einen Dienst mit systemd einrichten. 
+Für den produktiven Einsatz sollte die App als Dienst mit systemd eingerichtet werden. 
 Hier sind einige Vorraussetzungen zu erfüllen, die hier nicht extra beschrieben werden, da es sich um Standard
 Linux Befehle handelt
-- Anlegen eines Benutzers, wenn es ihn nicht schon gibt ( www-data)
+- Anlegen eines Benutzers, wenn es ihn nicht schon gibt (www-data)
+- Sicherstellen, dass alle Dateien im INSTALLATIONSVERZEICHNIS www-data gehören. Auch bei einer späteren Änderung der Dateien.
 
 #### Erstellen einer Systemd Startdatei
-Das folgende Startscript setzt folgenden Einstellungen  (Bei Bedarf ändern):
+Das folgende Startscript setzt folgenden Einstellungen. In den Klammern stehen die Stellen im Script,
+an denen die EInstellungen zu finden sind:
 - **Name der Datei:** ausbildersprechtag.service
-- **INSTALLATIONSVERZEICHNIS:** /var/www/ausbildersprechtag/
-- **LogPfad:** /var/log/gunicorn/
-- **Port:**  8083
+- **INSTALLATIONSVERZEICHNIS:** /var/www/ausbildersprechtag/ (WorkingDirectory, Environment, ExecStart)
+- **Logdateien:** /var/log/gunicorn/ausbildersprechtag_ (--access-logfile, --error-logfile)
+- **Port:**  8083 (--bind 0.0.0.0:8083)
 
-Erstellen Sie eine Datei **/etc/systemd/system/ausbildersprechtag.service** mit folgendem, evtl.angepasstem Inhalt:
+Erstellen Sie eine Datei **/etc/systemd/system/ausbildersprechtag.service** mit folgendem, evtl. angepasstem Inhalt:
 ```
 [Unit]
 Description=Gunicorn Ausbildersprechtag (8083)
 After=network.target
 
 [Service]
-# Benutzer und Gruppe
+# Benutzer und Gruppe, unter der Gunicorn läuft
 User=www-data
 Group=www-data
 
 # Arbeitsverzeichnis
 WorkingDirectory=/var/www/ausbildersprechtag/
 
-# Umgebungsvariablen (z. B. für Virtualenv)
+# Umgebungsvariablen (nutzt das Virtualenv)
 Environment="PATH=/var/www/ausbildersprechtag/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Environment="PYTHONUNBUFFERED=1"
 
-# Gunicorn-Befehl
+# Erstellt automatisch /var/log/gunicorn mit Rechten für www-data
+RuntimeDirectory=gunicorn
+RuntimeDirectoryMode=0755
+
+# Gunicorn-Befehl (Pfade zu Logs auf das neue RuntimeDirectory angepasst)
 ExecStart=/var/www/ausbildersprechtag/.venv/bin/gunicorn \
     --workers 2 \
     --bind 0.0.0.0:8083 \
     --log-level info \
-    --access-logfile /var/log/gunicorn/sprechtag_access.log \
-    --error-logfile /var/log/gunicorn/sprechtag_error.log \
+    --access-logfile /var/log/gunicorn/ausbildersprechtag_access.log \
+    --error-logfile /var/log/gunicorn/ausbildersprechtag_error.log \
     --timeout 30 \
     --graceful-timeout 10 \
     sprechtag:app
 
-# Automatischer Neustart
+# Automatischer Neustart bei Absturz
 Restart=always
 RestartSec=5
 
-# Timeout für Stop-Vorgang
+# Timeout für sauberes Beenden
 TimeoutStopSec=30
-
-# Sauberes Beenden
-ExecStop=/bin/kill -TERM $MAINPID
-
-# Berechtigungen für Log-Dateien
-PermissionsStartOnly=true
-ExecStartPre=/bin/mkdir -p /var/log/gunicorn
-ExecStartPre=/bin/chown www-data:www-data /var/log/gunicorn
-ExecStartPre=/bin/chmod 755 /var/log/gunicorn
-
-# Berechtigungen für App-Verzeichnis
-ExecStartPre=/bin/chown www-data:www-data /var/www/ausbildersprechtag/ -R
 
 [Install]
 WantedBy=multi-user.target
