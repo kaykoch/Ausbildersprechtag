@@ -62,43 +62,6 @@ if command_exists "$PYTHON_CMD"; then
   fi
 fi
 
-# 1b) Prüfung: libpangocairo-1.0-0
-info "Prüfe Systembibliothek libpangocairo-1.0-0..."
-
-check_libpangocairo() {
-  # Variante A: ldconfig (Linux)
-  if command_exists ldconfig; then
-    if ldconfig -p 2>/dev/null | grep -q "libpangocairo"; then
-      okay "libpangocairo-1.0-0 gefunden (via ldconfig)."
-      return 0
-    fi
-  fi
-  # Variante B: dpkg (Debian/Ubuntu)
-  if command_exists dpkg; then
-    if dpkg -s libpangocairo-1.0-0 >/dev/null 2>&1; then
-      okay "libpangocairo-1.0-0 gefunden (via dpkg)."
-      return 0
-    fi
-  fi
-  # Variante C: rpm (Fedora/RHEL)
-  if command_exists rpm; then
-    if rpm -q pango >/dev/null 2>&1; then
-      okay "libpangocairo gefunden (via rpm/pango)."
-      return 0
-    fi
-  fi
-  return 1
-}
-
-if ! check_libpangocairo; then
-  error "libpangocairo-1.0-0 wurde nicht gefunden!"
-  warn "Bitte installiere die Bibliothek und starte das Script erneut:"
-  warn "  Debian/Ubuntu:  sudo apt install -y libpangocairo-1.0-0"
-  warn "  Fedora/RHEL:    sudo dnf install -y pango"
-  warn "  macOS (Brew):   brew install pango"
-  exit 2
-fi
-
 if [ "${#MISSING[@]}" -ne 0 ]; then
   error "Es fehlen oder sind nicht geeignet: ${MISSING[*]}"
   warn "Bitte installiere die fehlenden Abhängigkeiten und starte das Script erneut."
@@ -107,6 +70,22 @@ if [ "${#MISSING[@]}" -ne 0 ]; then
 fi
 
 okay "Alle benötigten Programme sind verfügbar."
+
+# --- NEU: Prüfung, ob der Benutzer www-data existiert ---
+info "Prüfe, ob Benutzer 'www-data' existiert..."
+if ! id -u www-data >/dev/null 2>&1; then
+    error "Benutzer 'www-data' existiert nicht. Abbruch."
+    exit 1
+fi
+okay "Benutzer 'www-data' existiert."
+
+# --- NEU: Berechtigungen für das aktuelle Verzeichnis und alle Unterverzeichnisse setzen ---
+info "Setze Berechtigungen für das aktuelle Verzeichnis und alle Unterverzeichnisse auf www-data:www-data..."
+if ! chown -R www-data:www-data .; then
+    error "Berechtigungen konnten nicht gesetzt werden. Abbruch."
+    exit 1
+fi
+okay "Berechtigungen erfolgreich gesetzt."
 
 # 2) requirements.txt prüfen
 if [ ! -f "$REQUIREMENTS_FILE" ]; then
@@ -183,7 +162,7 @@ info "Aktiviere venv und installiere Pakete..."
     while IFS= read -r line || [ -n "$line" ]; do
       pkg=$(echo "$line" | sed 's/[[:space:]]*#.*//' | tr -d ' \t')
       [ -z "$pkg" ] && continue
-      name=$(echo "$pkg" | sed -E 's/([<>~=!].*)$//')
+      name=$(echo "$pkg" | sed -E 's/([<>=~!].*)$//')
       if ! pip show "$name" >/dev/null 2>&1; then
         MISSING_PKGS+=("$name")
       fi
