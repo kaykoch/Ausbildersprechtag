@@ -35,6 +35,7 @@ def _init_db(state) -> None:
     Returns:
         None
     """
+
     global STATE
     STATE = state
     try:
@@ -45,10 +46,14 @@ def _init_db(state) -> None:
         import src.models  # noqa: F41
 
         try:
-            locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
+            # Ursprüglich: de_DE.UTF-8
+            # Falls de_DE.UTF-8 nicht auf dem Server installiert ist -> CRASH
+            # Deshalb Fallback "C.UTF-8" und manuelles Formatieren mit: __formatiere_datum_deutsch(dt)
+            locale.setlocale(locale.LC_TIME, "C.UTF-8")
 
             # state.db.drop_all()
             STATE.db.create_all()
+
             # update_db()
 
             existing_config = src.models.ConfigSetting.query.first()
@@ -115,7 +120,7 @@ def _update_app() -> None:
                 STATE.app.config[key.upper()] = value
 
         STATE.set_sprechtag(
-            STATE.app.config["SPRECHTAG_TERMIN"].strftime("%A, %e. %B %Y "),
+            __formatiere_datum_deutsch(STATE.app.config["SPRECHTAG_TERMIN"]),
             STATE.app.config["SPRECHTAG_BEGINN"],
             STATE.app.config["SPRECHTAG_ENDE"],
         )
@@ -272,8 +277,8 @@ def __send_mail(msg: Message) -> bool:
     # Standardrückgabewert auf False setzen
     returnvalue = False
     try:
-        # STATE.mail.send(msg)
-        print("SEND: ", msg.recipients)
+        STATE.mail.send(msg)
+        # print("SEND: ", msg.recipients)
         # print("SEND: \n", msg.html)
         returnvalue = True
 
@@ -451,6 +456,44 @@ def _export_to_pdf(berater: Berater) -> BytesIO:
     except Exception as e:
         logger.error(f"_export_to_pdf -> PDF‑Erstellung fehlgeschlagen: {e}")
         return False
+
+
+def __formatiere_datum_deutsch(dt: datetime) -> str:
+    """Formatiert ein datetime-Objekt in das deutsche Format:
+    'Wochentag, Tag. Monat Jahr' (z.B. Freitag, 25. Dezember 2026)
+    Funktioniert unabhängig von der System-Locale.
+
+    Args:
+        dt (datetime): Datetime Objekt, dass umgewandelt werden soll
+
+    Returns:
+        str: Deutsches Datum (z.B. Freitag, 25. Dezember 2026)
+    """
+    WOCHENTAGE = {0: "Montag", 1: "Dienstag", 2: "Mittwoch", 3: "Donnerstag", 4: "Freitag", 5: "Samstag", 6: "Sonntag"}
+
+    MONATE = {
+        1: "Januar",
+        2: "Februar",
+        3: "März",
+        4: "April",
+        5: "Mai",
+        6: "Juni",
+        7: "Juli",
+        8: "August",
+        9: "September",
+        10: "Oktober",
+        11: "November",
+        12: "Dezember",
+    }
+
+    # Wochentag (0 = Montag, 6 = Sonntag)
+    wochentag = WOCHENTAGE[dt.weekday()]
+    tag = dt.day
+    # Monat (1 = Januar, 12 = Dezember)
+    monat = MONATE[dt.month]
+    jahr = dt.year
+
+    return f"{wochentag}, {tag}. {monat} {jahr}"
 
 
 # +-----------------------------------------------

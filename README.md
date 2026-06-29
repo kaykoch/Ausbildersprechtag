@@ -27,9 +27,10 @@ apt install python3 python3-venv git
 
 ## Installation des Grundsystems
 Wählen Sie die Zeilen entsprechend, ob sie Variante 1 (Lokal zum testen) oder Variante 2 
-(auf einem Server als root !) einrichten wollen und wie sie das INSTALLATIONSVERZEICHNIS nennen wollen
+(auf einem Server als root !) einrichten wollen und wie sie das INSTALLATIONSVERZEICHNIS nennen wollen.
+>Im Beispiel: INSTALLATIONSVERZEICHNIS := /var/www/ausbildersprechtag/
 ```bash  
-# Erstellen des INSTALLATIONSVERZEICHNIS
+# Erstellen der Basis des INSTALLATIONSVERZEICHNIS
 mkdir ~/www/ # Variante 1 Lokal
 mkdir -p /var/www/ # Variante 2 Server
 
@@ -37,8 +38,9 @@ mkdir -p /var/www/ # Variante 2 Server
 cd ~/www # Variante 1 Lokal
 cd /var/www/ # Variante 2 Server
 
-# Herunterladen der App (git )                           
-git https://github.com/kaykoch/tss_ausbildersprechtag.git
+# Herunterladen der App (git) in IHR INSTALLATIONSVERZEICHNIS (/var/www/ausbildersprechtag/)
+# (tss ist das Kürzel meiner Schule)                     
+git clone https://github.com/kaykoch/tss_ausbildersprechtag.git /var/www/ausbildersprechtag/
 
 # Ins INSTALLATIONSVERZEICHNIS wechseln
  cd /var/www/ausbildersprechtag/

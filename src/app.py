@@ -24,6 +24,7 @@ def create_app(config_object=BaseConfig):
     app = Flask(__name__)
 
     # Basiskonfiguration laden
+
     app.config.from_object(config_object)
 
     # Extensions an App binden (db ist Eigenschaft von state )
