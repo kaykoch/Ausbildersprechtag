@@ -15,20 +15,31 @@ Die Installation erfolgt über setup.py. Das Programm installiert eine virtuelle
 Zusätzlich wird [Gunicorn](https://gunicorn.org) instaliert. Ein Web Server Gateway Interface (WSGI) HTTP Server 
 
 ### Voraussetzungen
-Auf dem Server muss python3 (>= 3.11), pip3 und python3-venv installiert sein
-Je nach dem, wie Ihr das repository herunterladet muss noch git oder zip installiert werden
+Auf dem Server muss python3 (>= 3.11), python3-venv und git installiert sein
+```bash 
+apt install python3
+apt install python3-venv
+apt install git
+```
 
 ### Installation
-```bash 
+Wählen Sie die Zeilen entsprechend, ob sie Variante 1 (Lokal zum testen) oder 
+Variante 2 (auf einem Server als root !) einrichten wollen.
+```bash  
 # Erstellen eines Zielordners
-mkdir erfass
+mkdir ~/ausbildersprechtag # Variante 1 Lokal
+mkdir -p /var/www/ausbildersprechtag # Variante 2 Server
+
 # In Ordner hineinspringen                            
-cd erfass
-# Herunterladen der App                                
+cd /var/www/ausbildersprechtag # Variante 1 Lokal
+cd ~/ausbildersprechtag # Variante 2 Server
+
+# Herunterladen der App (git )                                
 git clone https://github.com/kaykoch/Ausbildersprechtag.git
 # Setup-Programm starten
 python3 setup.py                                
 ```
+
 ## Programmstart
 ### Lokal
 Wenn das Programm zum testen auf dem lokalen PC gestartet werden soll:
@@ -38,24 +49,15 @@ source .venv/bin/activate
 ```
 - Programm starten: (Sollte die die App nicht starten, liegt es vielleicht daran, dass sie nicht ausführbar ist)
 ```bash 
-./erfass.py
+./sprechtag.py
 ```
-In dem Fall:
+In dem Fall zuerst die Datei ausführbar machen und danach nochmal versuchen:
 
-- entweder jedes Mal: 
 ```bash
-python3 ./erfass.py
-```
-- oder (dringend empfohlen) einmalig die Datei ausführbar machen: 
-```bash
- chmod +x erfass.py 
+ chmod +x sprechtag.py 
  ```
-und in Zukunft, wie beschrieben: 
-```bash 
-./erfass.py
-```
 
-**erfass.py:** \
+**sprechtag.py:** \
 Man kann die App im Debug Mode laufen lassen. Das führt dazu, dass bei Änderungen am Code nicht neu gestartet werden muss. \
 Im Quelltext:
 
@@ -78,9 +80,12 @@ bzw. für die Administration:  (Login: admin | Password: admin)
   ``` 
  
 
-### Server
+### Server-Variante 1
+(mit startGunicorn.py) 
+
 Wenn das Programm im produktiven Einsatz laufen, kommt GuniCorn ins Spiel. \
 Hierfür gibt es das Startscript: (Es gilt für die Ausführbarkeit das gleiche wie oben.) 
+Nach dem Anpassungen muss startGunicorn.py ausgeführt werden 
 ```bash 
 startGunicorn.py
 ```
@@ -97,7 +102,7 @@ APP_NAME = (
 # Port auf dem der Server hört
 PORT = "8081"
 # Anzahl der gestarteten Dienste. Nur interessant bei zu erwartender hoher Last
-WORKERS = 1  
+WORKERS = 3  
 ```
 Der Aufruf erfolgt im Browser mit: 
    ```
@@ -108,9 +113,101 @@ bzw. für die Administration:
   ```
 http://<SERVER_URL>:PORT//admin
   ``` 
-Dieses Handbuch führt Sie Schritt für Schritt durch das System. Es deckt sowohl Ihre eigene Registrierung und Terminverwaltung als auch den Prozess aus Sicht der Ausbildungsbetriebe ab, damit Sie bei Rückfragen Ihrer Auszubildenden oder der Betriebe fundiert Auskunft geben können.
+
+### Server-Variante 2 
+(mit systemd) \
+
+Als Alternative kann man auch einen Dienst mit systemd einrichten. 
+Hier sind einige Vorraussetzungen zu erfüllen, die hier nicht extra beschrieben werden, da es sich um Standard
+Linux Befehle handelt
+- Anlegen eines Benutzers, wenn es ihn nicht schon gibt ( www-data)
+
+#### Erstellen einer Systemd Startdatei
+Das folgende Startscript setzt folgenden Einstellungen  (Bei Bedarf ändern):
+- **Name der Datei:** /etc/systemd/system/ausbildersprechtag.service
+- **Installationspfad:** /var/www/ausbildersprechtag/
+- **LogPfad:** /var/log/gunicorn/
+- **Port:**  8081
+
+Erstellen Sie eine Datei im /etc/systemd/system/ausbildersprechtag.service mit folgendem, angepasstem Inhalt:
+```
+[Unit]
+Description=Gunicorn Ausbildersprechtag (8081)
+After=network.target
+
+[Service]
+# Benutzer und Gruppe
+User=www-data
+Group=www-data
+
+# Arbeitsverzeichnis
+WorkingDirectory=/var/www/ausbildersprechtag/
+
+# Umgebungsvariablen (z. B. für Virtualenv)
+Environment="PATH=/var/www/ausbildersprechtag/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+
+# Gunicorn-Befehl
+ExecStart=/var/www/ausbildersprechtag/.venv/bin/gunicorn \
+    --workers 2 \
+    --bind 0.0.0.0:8081 \
+    --log-level info \
+    --access-logfile /var/log/gunicorn/sprechtag_access.log \
+    --error-logfile /var/log/gunicorn/sprechtag_error.log \
+    --timeout 30 \
+    --graceful-timeout 10 \
+    sprechtag:app
+
+# Automatischer Neustart
+Restart=always
+RestartSec=5
+
+# Timeout für Stop-Vorgang
+TimeoutStopSec=30
+
+# Sauberes Beenden
+ExecStop=/bin/kill -TERM $MAINPID
+
+# Berechtigungen für Log-Dateien
+PermissionsStartOnly=true
+ExecStartPre=/bin/mkdir -p /var/log/gunicorn
+ExecStartPre=/bin/chown www-data:www-data /var/log/gunicorn
+ExecStartPre=/bin/chmod 755 /var/log/gunicorn
+
+# Berechtigungen für App-Verzeichnis
+ExecStartPre=/bin/chown www-data:www-data /var/www/tss_ausbildersprechtag/ -R
+
+[Install]
+WantedBy=multi-user.target
+```
+Danach muss der Dienst registriert und gestartet werden
+```
+systemctl daemon-reload
+systemctl enable ausbildersprechtag.service
+```
+und starten Sie den Dienst:
+```
+systemctl restart ausbildersprechtag.service
+```
+Man kann den status des Dienstes überprüfen:
+```
+systemctl status ausbildersprechtag.service
+```
+Man sollte dann ganz unten folgendes sehen:
+```
+systemd[1]: Started ausbildersprechtag.service - Gunicorn Ausbildersprechtag (8081).
+```
+#### Zugriff aus dem Internet
+Damit der Dienst aus dem Internet erreicht werden kann, muss der Zugriff eingerichtet werden. Auch das sind Dinge, die nicht
+primär mit der Applikation zu tun haben. Daher nur eine Liste meiner Empfehlungen, wenn mehr als eine Applikation geplant ist:
+- Einrichten einer Firewall (Freigabe auf SSH und HTTPS)
+- Einrichten von Docker
+- Installation von  [Nginx Proxy Manager](https://nginxproxymanager.com)
+- Konfiguration des Managers für den Gebrauch von Let's Encrypt mit DNS-Challenge (*.MEINE_SCHULE.DE)
+- Weiterleitung des Proxy-Hosts auf die Applikation (spechtag.MEINE_SCHULE.DE -> http://<SERVER_URL>:PORT/)
 
 # Ablauf für Lehrkräfte
+Dieses Handbuch führt Sie Schritt für Schritt durch das System. Es deckt sowohl Ihre eigene Registrierung und Terminverwaltung als auch den Prozess aus Sicht der Ausbildungsbetriebe ab, damit Sie bei Rückfragen Ihrer Auszubildenden oder der Betriebe fundiert Auskunft geben können.
 
 ## Erstanmeldung und Registrierung
 ![Screenshot der Anwendung](./src/static/images/anmeldeseite_lehrkraft_1.png)
